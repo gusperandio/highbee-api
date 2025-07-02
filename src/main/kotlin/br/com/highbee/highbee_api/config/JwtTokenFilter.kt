@@ -1,4 +1,4 @@
-package br.com.highbee.highbee_api.security
+package br.com.highbee.highbee_api.config
 
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest

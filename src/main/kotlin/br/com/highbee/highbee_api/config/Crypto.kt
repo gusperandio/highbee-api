@@ -1,4 +1,4 @@
-package br.com.highbee.highbee_api.security
+package br.com.highbee.highbee_api.config
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 

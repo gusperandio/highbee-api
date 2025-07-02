@@ -4,64 +4,54 @@ package br.com.highbee.highbee_api.user
 import br.com.highbee.highbee_api.role.Role
 import jakarta.persistence.*
 import jakarta.persistence.ManyToMany
+import jakarta.validation.constraints.Null
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 import java.time.LocalDateTime
-
 @Entity
 @Table(name = "users")
 class User(
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
     @Column(unique = true, nullable = false)
     var email: String = "",
 
-    @NotNull
     var name: String = "",
 
-    @NotNull
-    val ageDate: String = "",
+    val age: Int? = null, // pode ser nulo
 
-    @NotNull
     var password: String = "",
 
-    @NotNull
     val avatar: String = "",
 
-    @NotNull
     val country: String = "",
 
-    @NotNull
     val intention: String = "",
 
-    @NotNull
     val socialAuth: Boolean = false,
 
-    @NotNull
+    val socialUID: String? = null, // pode ser nulo (ex: login por email)
+
     val termsAgree: Boolean = false,
 
-    @NotNull
     val blackList: Boolean = false,
 
-    @NotNull
     val premium: Boolean = false,
 
-    @Nullable
     val premiumTime: LocalDateTime? = null,
 
-    @Nullable
     val lastLogin: LocalDateTime? = null,
 
-    @NotNull
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @ManyToMany
     @JoinTable(
-        name = "UserRole",
+        name = "user_role",
         joinColumns = [JoinColumn(name = "idUser", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "idRole", referencedColumnName = "id")]
     )
