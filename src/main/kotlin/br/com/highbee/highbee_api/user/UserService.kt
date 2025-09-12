@@ -5,6 +5,7 @@ import br.com.highbee.highbee_api.config.Crypt
 import br.com.highbee.highbee_api.config.Jwt
 import br.com.highbee.highbee_api.user.response.LoginResponse
 import br.com.highbee.highbee_api.user.response.UserResponse
+import br.com.highbee.highbee_api.user.response.UserRolesListResponse
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -66,4 +67,10 @@ class UserService(
     }
 
     fun findByIdOrNull(id: Long) = userRepository.findByIdOrNull(id)
+
+    fun findByRole(role: String):  List<UserRolesListResponse>
+        = userRepository.findByRole(role).map { UserRolesListResponse(it) }
+
+
+
 }

@@ -43,13 +43,13 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector
     scheme = "bearer",
     bearerFormat = "JWT"
 )
-class SecurityConfig(val jwtTokenFilter: JwtTokenFilter) {
+open class SecurityConfig(val jwtTokenFilter: JwtTokenFilter) {
     @Bean
-    fun mvc(instrospector: HandlerMappingIntrospector) =
+    open fun mvc(instrospector: HandlerMappingIntrospector) =
         MvcRequestMatcher.Builder(instrospector)
 
     @Bean
-    fun filterChain(security: HttpSecurity, mvc: MvcRequestMatcher.Builder): DefaultSecurityFilterChain =
+    open fun filterChain(security: HttpSecurity, mvc: MvcRequestMatcher.Builder): DefaultSecurityFilterChain =
         security.cors(Customizer.withDefaults())
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(STATELESS) }
@@ -61,6 +61,10 @@ class SecurityConfig(val jwtTokenFilter: JwtTokenFilter) {
             } }
             .authorizeHttpRequests { requests ->
                 requests
+                    .requestMatchers(
+                        "/api/swagger-ui/**",      // Libera a interface gráfica do Swagger
+                        "/api/v3/api-docs/**"       // Libera o JSON da definição da API que o UI consome
+                    ).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/users/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/users/{id}")).authenticated()
                     .anyRequest().authenticated()
@@ -69,7 +73,7 @@ class SecurityConfig(val jwtTokenFilter: JwtTokenFilter) {
             .build()
 
     @Bean
-    fun corsFilter() = CorsConfiguration().apply {
+    open fun corsFilter() = CorsConfiguration().apply {
         addAllowedHeader("*")
         addAllowedOrigin("*")
         addAllowedMethod("*")

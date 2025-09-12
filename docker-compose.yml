@@ -1,50 +1,67 @@
-# Versão da sintaxe do Docker Compose
-version: '3.8'
-
 # Definição dos nossos serviços (containers)
 services:
 
   # Serviço do Banco de Dados PostgreSQL
   db:
-    image: postgres:16-alpine  # Usamos uma imagem leve do Postgres
+    image: postgres:16-alpine
     container_name: postgres-highbee
     ports:
-      - "5432:5432"  # Mapeia a porta para podermos conectar com um cliente de DB se quisermos
+      - "5432:5432"
     environment:
-      # Usa as credenciais que você forneceu
       POSTGRES_DB: high-bee
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: CR2CPL6RH2GM
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Volume para persistir os dados do banco
+      - postgres_data:/var/lib/postgresql/data
+    # ---- HEALTHCHECK PARA O POSTGRES ----
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d high-bee"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Serviço do Redis
   redis:
-    image: redis:7-alpine # Imagem leve do Redis
+    image: redis:7-alpine
     container_name: redis-highbee
     ports:
       - "6379:6379"
+    # ---- HEALTHCHECK PARA O REDIS ----
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Serviço da nossa aplicação Spring Boot
   app:
     container_name: app-highbee
-    # Constrói a imagem a partir do Dockerfile na pasta atual
     build: .
     ports:
       - "8080:8080" # Porta da aplicação
       - "5005:5005" # Porta de DEBUG
     environment:
-      # A MÁGICA ACONTECE AQUI!
-      # Sobrescrevemos as configurações para usar os nomes dos serviços do Docker Compose
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/high-bee
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: CR2CPL6RH2GM
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+    # ---- ATUALIZAÇÃO DO DEPENDS_ON ----
+    # Agora a aplicação só inicia DEPOIS que o healthcheck do DB e do Redis passar
     depends_on:
-      - db      # A aplicação só vai iniciar DEPOIS que o container do DB e do Redis iniciarem
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      # Mapeia o código fonte
+      - .:/app
+      # Isola o cache do Gradle para evitar conflitos de lock
+      - gradle_cache:/home/gradle/.gradle
+    command: ./gradlew bootRun --no-daemon
 
-# Definição do volume nomeado para persistência dos dados do Postgres
+# Definição dos volumes nomeados
 volumes:
   postgres_data:
+  gradle_cache:
