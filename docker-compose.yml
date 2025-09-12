@@ -1,0 +1,50 @@
+# Versão da sintaxe do Docker Compose
+version: '3.8'
+
+# Definição dos nossos serviços (containers)
+services:
+
+  # Serviço do Banco de Dados PostgreSQL
+  db:
+    image: postgres:16-alpine  # Usamos uma imagem leve do Postgres
+    container_name: postgres-highbee
+    ports:
+      - "5432:5432"  # Mapeia a porta para podermos conectar com um cliente de DB se quisermos
+    environment:
+      # Usa as credenciais que você forneceu
+      POSTGRES_DB: high-bee
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CR2CPL6RH2GM
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Volume para persistir os dados do banco
+
+  # Serviço do Redis
+  redis:
+    image: redis:7-alpine # Imagem leve do Redis
+    container_name: redis-highbee
+    ports:
+      - "6379:6379"
+
+  # Serviço da nossa aplicação Spring Boot
+  app:
+    container_name: app-highbee
+    # Constrói a imagem a partir do Dockerfile na pasta atual
+    build: .
+    ports:
+      - "8080:8080" # Porta da aplicação
+      - "5005:5005" # Porta de DEBUG
+    environment:
+      # A MÁGICA ACONTECE AQUI!
+      # Sobrescrevemos as configurações para usar os nomes dos serviços do Docker Compose
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/high-bee
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: CR2CPL6RH2GM
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    depends_on:
+      - db      # A aplicação só vai iniciar DEPOIS que o container do DB e do Redis iniciarem
+      - redis
+
+# Definição do volume nomeado para persistência dos dados do Postgres
+volumes:
+  postgres_data:
