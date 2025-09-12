@@ -37,6 +37,7 @@ class UserController(val userService: UserService) {
             ?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.notFound().build()
 
+
     @PutMapping("/{id}/roles/{role}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "WebToken")

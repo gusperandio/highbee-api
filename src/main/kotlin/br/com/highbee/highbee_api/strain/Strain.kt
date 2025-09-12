@@ -9,9 +9,9 @@ data class Strain(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    val nome: String,
+    val name: String,
 
-    val desc: String,
+    val description: String,
 
     val photo: String,
 
@@ -19,15 +19,15 @@ data class Strain(
 
     val rendOutdoor: Double,
 
-    val thc: Double,
+    val thcPercent: Double,
 
-    val automatic: Boolean,
+    val automatic: String,
 
-    val photoperiod: Boolean,
+    val photoperiod: String,
 
-    val indica: Boolean,
+    val indica: String,
 
-    val sativa: Boolean,
+    val sativa: String,
 
-    val hybrid: Boolean
+    val hybrid: String
 )

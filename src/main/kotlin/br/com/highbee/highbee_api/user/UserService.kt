@@ -23,7 +23,7 @@ class UserService(
     fun save(user: User): User {
         user.password = crypt.hashPassword(user.password)
         val userSaved = userRepository.save(user)
-        addRole(userSaved.id, "USER")
+        addRole(userSaved.id, "USER_FREE")
         return userSaved
     }
 
@@ -31,12 +31,14 @@ class UserService(
         val user = userRepository.findByIdOrNull(id)
             ?: throw IllegalArgumentException("User not found with id $id")
 
-        if (user.roles.any { it.name == roleName }) return false
+        val finalRoleName = if (userRepository.count() == 1L) "ADMIN" else roleName
 
-        val i = roleRepository.findByName(roleName)
-            ?: throw IllegalArgumentException("Role with name $roleName not found")
+        if (user.roles.any { it.name == finalRoleName }) return false
 
-        user.roles.add(i)
+        val role = roleRepository.findByName(finalRoleName)
+            .orElseThrow { IllegalArgumentException("Role with name '$finalRoleName' not found") }
+
+        user.roles.add(role)
         userRepository.save(user)
         return true
     }

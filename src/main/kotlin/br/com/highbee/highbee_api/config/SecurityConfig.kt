@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy.STATELESS
 import org.springframework.security.web.DefaultSecurityFilterChain
+import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
@@ -60,9 +61,8 @@ class SecurityConfig(val jwtTokenFilter: JwtTokenFilter) {
             } }
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(HttpMethod.GET)).permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.POST, "/users/**")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/users/{id}")).authenticated()
-                    .requestMatchers(mvc.pattern(HttpMethod.POST, "/users")).permitAll()
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtTokenFilter, BasicAuthenticationFilter::class.java)

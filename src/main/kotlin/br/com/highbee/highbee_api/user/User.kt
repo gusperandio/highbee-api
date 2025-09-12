@@ -21,7 +21,7 @@ class User(
 
     var name: String = "",
 
-    val age: Int? = null, // pode ser nulo
+    val age: LocalDateTime? = null,
 
     var password: String = "",
 
@@ -33,7 +33,7 @@ class User(
 
     val socialAuth: Boolean = false,
 
-    val socialUID: String? = null, // pode ser nulo (ex: login por email)
+    val socialUID: String? = null,
 
     val termsAgree: Boolean = false,
 
