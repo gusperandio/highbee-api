@@ -3,15 +3,19 @@ package br.com.highbee.highbee_api.user
 import br.com.highbee.highbee_api.role.RoleRepository
 import br.com.highbee.highbee_api.config.Crypt
 import br.com.highbee.highbee_api.config.Jwt
+import br.com.highbee.highbee_api.exceptions.RoleNotFoundException
+import br.com.highbee.highbee_api.exceptions.UserNotFoundException
 import br.com.highbee.highbee_api.user.response.LoginResponse
 import br.com.highbee.highbee_api.user.response.UserResponse
 import br.com.highbee.highbee_api.user.response.UserRolesListResponse
+import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(
+open class UserService(
     val userRepository: UserRepository,
     val roleRepository: RoleRepository,
     val jwt: Jwt
@@ -28,20 +32,24 @@ class UserService(
         return userSaved
     }
 
-    fun addRole(id: Long, roleName: String): Boolean {
-        val user = userRepository.findByIdOrNull(id)
-            ?: throw IllegalArgumentException("User not found with id $id")
 
-        val finalRoleName = if (userRepository.count() == 1L) "ADMIN" else roleName
+    fun addRole(userId: Long, roleName: String) {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw UserNotFoundException("Usuário com ID $userId não encontrado.")
 
-        if (user.roles.any { it.name == finalRoleName }) return false
+        val roleExists = user.roles.any { it.name.equals(roleName, ignoreCase = true) }
+        if (roleExists) {
 
-        val role = roleRepository.findByName(finalRoleName)
-            .orElseThrow { IllegalArgumentException("Role with name '$finalRoleName' not found") }
+            return
+        }
 
+
+        val role = roleRepository.findByName(roleName)
+            .orElseThrow { RoleNotFoundException("Role com nome '$roleName' não encontrada.") }
+
+        // 4. Adiciona a role e salva
         user.roles.add(role)
         userRepository.save(user)
-        return true
     }
 
 
@@ -66,7 +74,8 @@ class UserService(
         )
     }
 
-    fun findByIdOrNull(id: Long) = userRepository.findByIdOrNull(id)
+    //@Cacheable("users", key = "#id")
+    open fun findByIdOrNull(id: Long) = userRepository.findByIdOrNull(id)
 
     fun findByRole(role: String):  List<UserRolesListResponse>
         = userRepository.findByRole(role).map { UserRolesListResponse(it) }

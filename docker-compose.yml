@@ -1,4 +1,3 @@
-# Definição dos nossos serviços (containers)
 services:
 
   # Serviço do Banco de Dados PostgreSQL
@@ -13,12 +12,13 @@ services:
       POSTGRES_PASSWORD: CR2CPL6RH2GM
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # ---- HEALTHCHECK PARA O POSTGRES ----
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d high-bee"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - highbee-net
 
   # Serviço do Redis
   redis:
@@ -26,42 +26,47 @@ services:
     container_name: redis-highbee
     ports:
       - "6379:6379"
-    # ---- HEALTHCHECK PARA O REDIS ----
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - highbee-net
 
   # Serviço da nossa aplicação Spring Boot
   app:
     container_name: app-highbee
     build: .
     ports:
-      - "8080:8080" # Porta da aplicação
-      - "5005:5005" # Porta de DEBUG
+      - "8080:8080"
+      - "5005:5005"
     environment:
+      GRADLE_USER_HOME: /home/gradle/cache
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/high-bee
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: CR2CPL6RH2GM
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-    # ---- ATUALIZAÇÃO DO DEPENDS_ON ----
-    # Agora a aplicação só inicia DEPOIS que o healthcheck do DB e do Redis passar
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      # Mapeia o código fonte
       - .:/app
-      # Isola o cache do Gradle para evitar conflitos de lock
-      - gradle_cache:/home/gradle/.gradle
+      - gradle_cache:/home/gradle/cache
     command: ./gradlew bootRun --no-daemon
+    networks:
+      - highbee-net
 
 # Definição dos volumes nomeados
 volumes:
   postgres_data:
   gradle_cache:
+
+# ---- DEFINIÇÃO DA NOSSA REDE CUSTOMIZADA ----
+networks:
+  highbee-net:
+    driver: bridge

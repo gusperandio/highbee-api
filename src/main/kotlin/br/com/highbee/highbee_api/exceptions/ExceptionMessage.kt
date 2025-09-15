@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ResponseStatus
 
 @ControllerAdvice
 class ExceptionMessage {
@@ -14,3 +16,10 @@ class ExceptionMessage {
         return ResponseEntity.status(BAD_REQUEST).body(ex.message)
     }
 }
+
+
+@ResponseStatus(HttpStatus.NOT_FOUND) // <-- Diz ao Spring para retornar 404
+class UserNotFoundException(message: String) : RuntimeException(message)
+
+@ResponseStatus(HttpStatus.NOT_FOUND) // <-- Diz ao Spring para retornar 404
+class RoleNotFoundException(message: String) : RuntimeException(message)

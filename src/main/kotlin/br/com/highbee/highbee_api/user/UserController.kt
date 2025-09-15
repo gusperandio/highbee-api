@@ -46,15 +46,16 @@ class UserController(val userService: UserService) {
             ?: ResponseEntity.notFound().build()
 
 
-    @PutMapping("/{id}/roles/{role}")
+    @PutMapping("/{id}/roles/{roleName}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "WebToken")
     fun grantRole(
         @PathVariable id: Long,
-        @PathVariable role: String
-    ): ResponseEntity<Void> =
-        if (userService.addRole(id, role)) ResponseEntity.ok().build()
-        else ResponseEntity.noContent().build()
+        @PathVariable roleName: String
+    ): ResponseEntity<Void> {
+        userService.addRole(id, roleName)
+        return ResponseEntity.ok().build()
+    }
 
     @GetMapping("/by-role/{role}")
     @PreAuthorize("hasRole('ADMIN')")
