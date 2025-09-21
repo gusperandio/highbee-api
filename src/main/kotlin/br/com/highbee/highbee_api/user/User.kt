@@ -21,21 +21,21 @@ class User(
 
     var name: String = "",
 
-    val age: LocalDateTime? = null,
+    var age: LocalDateTime? = null,
 
     var password: String = "",
 
     val avatar: String = "",
 
-    val country: String = "",
+    var country: String = "",
 
-    val intention: String = "",
+    var intention: String = "",
 
     val socialAuth: Boolean = false,
 
     val socialUID: String? = null,
 
-    val termsAgree: Boolean = false,
+    var termsAgree: Boolean = false,
 
     val blackList: Boolean = false,
 
@@ -43,7 +43,7 @@ class User(
 
     val premiumTime: LocalDateTime? = null,
 
-    val lastLogin: LocalDateTime? = null,
+    var lastLogin: LocalDateTime? = null,
 
     val createdAt: LocalDateTime = LocalDateTime.now(),
 

@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 
 @ControllerAdvice
 class ExceptionMessage {
-
-
     @ExceptionHandler(BadRequestException::class)
     fun handleBadRequestException(ex: BadRequestException): ResponseEntity<String> {
         return ResponseEntity.status(BAD_REQUEST).body(ex.message)
@@ -23,3 +21,6 @@ class UserNotFoundException(message: String) : RuntimeException(message)
 
 @ResponseStatus(HttpStatus.NOT_FOUND) // <-- Diz ao Spring para retornar 404
 class RoleNotFoundException(message: String) : RuntimeException(message)
+
+@ResponseStatus(HttpStatus.UNAUTHORIZED) // <-- Diz ao Spring para retornar 403
+class NotAuthorized(message: String) : RuntimeException(message)

@@ -29,5 +29,7 @@ data class Strain(
 
     val sativa: String,
 
-    val hybrid: String
+    val hybrid: String,
+
+    var adminApproved: Boolean = false,
 )

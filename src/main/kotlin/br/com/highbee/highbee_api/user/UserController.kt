@@ -1,5 +1,6 @@
 package br.com.highbee.highbee_api.user
 
+import br.com.highbee.highbee_api.user.request.FinalStepRequest
 import br.com.highbee.highbee_api.user.request.LoginRequest
 import br.com.highbee.highbee_api.user.request.RegisterRequest
 import br.com.highbee.highbee_api.user.response.UserResponse
@@ -19,16 +20,16 @@ import org.springframework.web.bind.annotation.*
 class UserController(val userService: UserService) {
 
     @PostMapping
-    fun insertUser(@RequestBody @Valid userReq: RegisterRequest): ResponseEntity<UserResponse> {
-        return userService.save(userReq.toUser())
+    fun insertUserRoute(@RequestBody @Valid userReq: RegisterRequest): ResponseEntity<UserResponse> =
+         userService.save(userReq.toUser())
             .let { userResponse ->
                 ResponseEntity.status(HttpStatus.CREATED)
                     .body(UserResponse(userResponse))
             }
-    }
+
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody login: LoginRequest) =
+    fun loginRoute(@Valid @RequestBody login: LoginRequest) =
         userService.login(login.email!!, login.password!!)
             ?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
@@ -49,7 +50,7 @@ class UserController(val userService: UserService) {
     @PutMapping("/{id}/roles/{roleName}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "WebToken")
-    fun grantRole(
+    fun grantRoleRoute(
         @PathVariable id: Long,
         @PathVariable roleName: String
     ): ResponseEntity<Void> {
@@ -60,9 +61,17 @@ class UserController(val userService: UserService) {
     @GetMapping("/by-role/{role}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "WebToken")
-    fun findUsersByRole(@PathVariable role: String): ResponseEntity<List<UserRolesListResponse>?> =
+    fun findUsersByRoleRoute(@PathVariable role: String): ResponseEntity<List<UserRolesListResponse>?> =
         userService.findByRole(role.uppercase())
             .let { ResponseEntity.ok(it) }
+
+    @PostMapping("/{id}/finish-register")
+    @SecurityRequirement(name = "WebToken")
+    fun finishRegisterRoute(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: FinalStepRequest
+    ): ResponseEntity<Any> = userService.finishUserRegistration(id, request)
+        .let { ResponseEntity.ok().build() }
 
 
 }
